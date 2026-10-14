@@ -1,0 +1,12 @@
+protocolo\MensajeRespuesta.class
+logic\Reserva.class
+protocolo\EventoServidor.class
+logic\Recurso.class
+protocolo\JsonProtocolo.class
+logic\Usuario.class
+data\LocalTimeAdapter.class
+protocolo\MensajeSolicitud.class
+data\XmlIdAdapter.class
+logic\Funcionario.class
+data\LocalDateAdapter.class
+logic\Categoria.class

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<data>
+    <funcionarios>
+        <funcionario>
+            <id>admin</id>
+            <clave>222</clave>
+            <rol>ADMIN</rol>
+            <nombre>Administrador</nombre>
+            <telefono>2222-0000</telefono>
+            <puesto></puesto>
+        </funcionario>
+        <funcionario>
+            <id>_111</id>
+            <clave>111</clave>
+            <rol>FUNCIONARIO</rol>
+            <nombre>Funcionario Test</nombre>
+            <telefono>8888-1234</telefono>
+            <puesto></puesto>
+        </funcionario>
+    </funcionarios>
+    <categorias>
+        <categoria>
+            <id>CAT-001</id>
+            <nombre>Sala para 10 personas</nombre>
+            <descripcion>Sala para 10 personas</descripcion>
+        </categoria>
+        <categoria>
+            <id>CAT-002</id>
+            <nombre>Laptop windows 11</nombre>
+            <descripcion>Laptop windows 11</descripcion>
+        </categoria>
+    </categorias>
+    <recursos>
+        <recurso>
+            <id>SALA-1</id>
+            <descripcion>Sala 1 primer piso</descripcion>
+            <categoria>CAT-001</categoria>
+        </recurso>
+        <recurso>
+            <id>SALA-2</id>
+            <descripcion>Sala 2 segundo piso</descripcion>
+            <categoria>CAT-001</categoria>
+        </recurso>
+        <recurso>
+            <id>_238715</id>
+            <descripcion>Laptop #238715</descripcion>
+            <categoria>CAT-002</categoria>
+        </recurso>
+    </recursos>
+    <reservas>
+        <reserva>
+            <id>RES-DEMO</id>
+            <titulo>Reunión de coordinación</titulo>
+            <fecha>2026-09-10</fecha>
+            <horaInicio>10:00</horaInicio>
+            <horaFin>12:00</horaFin>
+            <recursosAsignados>
+                <recurso>SALA-1</recurso>
+            </recursosAsignados>
+            <categoriasRequeridas>
+                <categoria>CAT-001</categoria>
+            </categoriasRequeridas>
+            <solicitante>_111</solicitante>
+            <estado>ACTIVA</estado>
+        </reserva>
+    </reservas>
+</data>
