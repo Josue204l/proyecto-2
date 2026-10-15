@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReservaDao {
-    private final ConexionMySql conexion;
+    private final Database conexion;
     private final FuncionarioDao funcionarioDao;
     private final RecursoDao recursoDao;
     private final CategoriaDao categoriaDao;
 
-    public ReservaDao(ConexionMySql conexion, FuncionarioDao funcionarioDao,
+    public ReservaDao(Database conexion, FuncionarioDao funcionarioDao,
                       RecursoDao recursoDao, CategoriaDao categoriaDao) {
         this.conexion = conexion;
         this.funcionarioDao = funcionarioDao;

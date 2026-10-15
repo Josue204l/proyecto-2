@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FuncionarioDao {
-    private final ConexionMySql conexion;
+    private final Database conexion;
 
-    public FuncionarioDao(ConexionMySql conexion) { this.conexion = conexion; }
+    public FuncionarioDao(Database conexion) { this.conexion = conexion; }
 
     public List<Funcionario> listar() throws SQLException {
         List<Funcionario> lista = new ArrayList<>();

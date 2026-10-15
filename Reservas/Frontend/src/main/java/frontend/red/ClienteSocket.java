@@ -1,96 +1,98 @@
 package frontend.red;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import protocolo.EventoServidor;
-import protocolo.JsonProtocolo;
-import protocolo.MensajeRespuesta;
-import protocolo.MensajeSolicitud;
+import protocolo.Notificacion;
+import protocolo.Respuesta;
+import protocolo.Solicitud;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
-/** Cliente TCP con un hilo lector dedicado para respuestas y eventos asincrónicos. */
-public final class ClienteSocket implements AutoCloseable {
-    private final Socket socket = new Socket();
-    private final BufferedReader entrada;
-    private final BufferedWriter salida;
+public class ClienteSocket {
+
+    private Socket              socket;
+    private ObjectOutputStream  salida;
+    private ObjectInputStream   entrada;
+    private volatile ReceptorNotificaciones receptor;
+    private volatile boolean conectado;
     private final Object candadoSalida = new Object();
-    private final Map<String, CompletableFuture<MensajeRespuesta>> pendientes = new ConcurrentHashMap<>();
-    private volatile Consumer<EventoServidor> receptorEventos = evento -> { };
-    private volatile boolean cerrado;
+    private final Map<String, CompletableFuture<Respuesta>> respuestasPendientes = new ConcurrentHashMap<>();
 
     public ClienteSocket(String host, int puerto) throws IOException {
-        socket.connect(new InetSocketAddress(host, puerto), (int) Duration.ofSeconds(5).toMillis());
-        socket.setKeepAlive(true);
-        entrada = new BufferedReader(new java.io.InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-        salida = new BufferedWriter(new java.io.OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-        Thread lector = new Thread(this::leer, "frontend-socket-reader");
-        lector.setDaemon(true);
-        lector.start();
+        socket    = new Socket(host, puerto);
+        salida    = new ObjectOutputStream(socket.getOutputStream());
+        salida.flush();
+        entrada   = new ObjectInputStream(socket.getInputStream());
+        conectado = true;
+        iniciarHiloLector();
     }
 
-    public void onEvento(Consumer<EventoServidor> receptor) {
-        receptorEventos = receptor == null ? evento -> { } : receptor;
+    /** Registra el objeto que recibirá las notificaciones asíncronas. */
+    public void setReceptorNotificaciones(ReceptorNotificaciones receptor) {
+        this.receptor = receptor;
     }
 
-    public MensajeRespuesta solicitar(String operacion, JsonNode datos) throws Exception {
-        if (cerrado) throw new IOException("La conexión con el Backend está cerrada.");
-        MensajeSolicitud solicitud = new MensajeSolicitud(UUID.randomUUID().toString(), operacion, datos);
-        CompletableFuture<MensajeRespuesta> futuro = new CompletableFuture<>();
-        pendientes.put(solicitud.id(), futuro);
+    /**
+     * Envía una solicitud y espera la respuesta de forma síncrona.
+     * Las notificaciones que lleguen mientras se espera se despachan al receptor.
+     */
+    public Respuesta enviar(Solicitud solicitud) throws Exception {
+        if (!conectado) throw new IOException("Sin conexión con el Backend.");
+        CompletableFuture<Respuesta> pendiente = new CompletableFuture<>();
+        respuestasPendientes.put(solicitud.getId(), pendiente);
         try {
             synchronized (candadoSalida) {
-                salida.write(JsonProtocolo.codificar(solicitud));
-                salida.newLine();
+                salida.writeObject(solicitud);
                 salida.flush();
+                salida.reset();
             }
-            MensajeRespuesta respuesta = futuro.get(30, TimeUnit.SECONDS);
-            if (!respuesta.correcta()) throw new IOException(respuesta.error());
-            return respuesta;
+            return pendiente.get(60, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            respuestasPendientes.remove(solicitud.getId());
+            throw e;
         } finally {
-            pendientes.remove(solicitud.id());
+            respuestasPendientes.remove(solicitud.getId());
         }
     }
 
-    private void leer() {
-        try {
-            String linea;
-            while (!cerrado && (linea = entrada.readLine()) != null) {
-                JsonNode nodo = JsonProtocolo.mapper().readTree(linea);
-                if (nodo.has("correcta")) {
-                    MensajeRespuesta respuesta = JsonProtocolo.mapper().treeToValue(nodo, MensajeRespuesta.class);
-                    CompletableFuture<MensajeRespuesta> futuro = pendientes.get(respuesta.id());
-                    if (futuro != null) futuro.complete(respuesta);
-                } else {
-                    EventoServidor evento = JsonProtocolo.mapper().treeToValue(nodo, EventoServidor.class);
-                    receptorEventos.accept(evento);
+    private void iniciarHiloLector() {
+        Thread hilo = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (conectado) {
+                        Object obj = entrada.readObject();
+                        if (obj instanceof Notificacion) {
+                            despacharNotificacion((Notificacion) obj);
+                        } else if (obj instanceof Respuesta) {
+                            Respuesta respuesta = (Respuesta) obj;
+                            CompletableFuture<Respuesta> pendiente = respuestasPendientes.get(respuesta.getIdSolicitud());
+                            if (pendiente != null) pendiente.complete(respuesta);
+                        }
+                    }
+                } catch (IOException | ClassNotFoundException e) {
+                    conectado = false;
+                    respuestasPendientes.values().forEach(f -> f.completeExceptionally(e));
                 }
             }
-            if (!cerrado) fallarPendientes(new IOException("El Backend cerró la conexión."));
-        } catch (Exception e) {
-            if (!cerrado) fallarPendientes(e);
-        }
+        });
+        hilo.setDaemon(true);
+        hilo.setName("frontend-lector-notificaciones");
+        hilo.start();
     }
 
-    private void fallarPendientes(Exception error) {
-        pendientes.values().forEach(futuro -> futuro.completeExceptionally(error));
+    private void despacharNotificacion(Notificacion n) {
+        if (receptor != null) receptor.recibirNotificacion(n);
     }
 
-    @Override
-    public void close() {
-        cerrado = true;
-        fallarPendientes(new IOException("Cliente desconectado."));
-        try { socket.close(); } catch (IOException ignored) { }
+    public void cerrar() {
+        conectado = false;
+        respuestasPendientes.values().forEach(f -> f.completeExceptionally(new IOException("Conexión cerrada.")));
+        try { if (socket != null) socket.close(); } catch (IOException ignored) {}
     }
 }

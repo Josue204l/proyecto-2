@@ -1,11 +1,11 @@
-CREATE DATABASE sistema_reservas;
-    use sistema_reservas;
+CREATE DATABASE IF NOT EXISTS sistema_reservas;
+USE sistema_reservas;
 
     -- --------------------------------------------------------
     -- TABLAS
     -- --------------------------------------------------------
 
-CREATE TABLE funcionarios (
+CREATE TABLE IF NOT EXISTS funcionarios (
                               id          varchar(10)  not null,
                               clave       varchar(20)  not null,
                               rol         varchar(20)  not null,
@@ -15,21 +15,21 @@ CREATE TABLE funcionarios (
                               Primary Key (id)
 );
 
-CREATE TABLE categorias (
+CREATE TABLE IF NOT EXISTS categorias (
                             id          varchar(10)  not null,
                             nombre      varchar(100) not null,
                             descripcion varchar(255),
                             Primary Key (id)
 );
 
-CREATE TABLE recursos (
+CREATE TABLE IF NOT EXISTS recursos (
                           id          varchar(10)  not null,
                           descripcion varchar(255) not null,
                           fk_categoria varchar(10) not null,
                           Primary Key (id)
 );
 
-CREATE TABLE reservas (
+CREATE TABLE IF NOT EXISTS reservas (
                           id              varchar(10)  not null,
                           titulo          varchar(150) not null,
                           fecha           date         not null,
@@ -40,19 +40,19 @@ CREATE TABLE reservas (
                           Primary Key (id)
 );
 
-CREATE TABLE reserva_categorias (
+CREATE TABLE IF NOT EXISTS reserva_categorias (
                                     fk_reserva   varchar(10) not null,
                                     fk_categoria varchar(10) not null,
                                     Primary Key (fk_reserva, fk_categoria)
 );
 
-CREATE TABLE reserva_recursos (
+CREATE TABLE IF NOT EXISTS reserva_recursos (
                                   fk_reserva  varchar(10) not null,
                                   fk_recurso  varchar(10) not null,
                                   Primary Key (fk_reserva, fk_recurso)
 );
 
-CREATE TABLE auditoria (
+CREATE TABLE IF NOT EXISTS auditoria (
                            id          int          not null AUTO_INCREMENT,
                            fecha_hora  datetime     not null DEFAULT CURRENT_TIMESTAMP,
                            usuario     varchar(10),
@@ -65,44 +65,83 @@ CREATE TABLE auditoria (
 -- LLAVES FORÁNEAS
 -- --------------------------------------------------------
 
-ALTER TABLE recursos ADD Foreign Key (fk_categoria) REFERENCES categorias (id);
+-- Agregar cada relación solo si todavía no existe. El chequeo también detecta
+-- las llaves que MySQL creó con nombres automáticos en ejecuciones anteriores.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'recursos'
+                 AND COLUMN_NAME = 'fk_categoria' AND REFERENCED_TABLE_NAME = 'categorias') = 0,
+              'ALTER TABLE recursos ADD CONSTRAINT fk_recursos_categoria FOREIGN KEY (fk_categoria) REFERENCES categorias (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE reservas ADD Foreign Key (fk_funcionario) REFERENCES funcionarios (id);
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservas'
+                 AND COLUMN_NAME = 'fk_funcionario' AND REFERENCED_TABLE_NAME = 'funcionarios') = 0,
+              'ALTER TABLE reservas ADD CONSTRAINT fk_reservas_funcionario FOREIGN KEY (fk_funcionario) REFERENCES funcionarios (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE reserva_categorias ADD Foreign Key (fk_reserva) REFERENCES reservas (id);
-ALTER TABLE reserva_categorias ADD Foreign Key (fk_categoria) REFERENCES categorias (id);
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reserva_categorias'
+                 AND COLUMN_NAME = 'fk_reserva' AND REFERENCED_TABLE_NAME = 'reservas') = 0,
+              'ALTER TABLE reserva_categorias ADD CONSTRAINT fk_reserva_categorias_reserva FOREIGN KEY (fk_reserva) REFERENCES reservas (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE reserva_recursos ADD Foreign Key (fk_reserva) REFERENCES reservas (id);
-ALTER TABLE reserva_recursos ADD Foreign Key (fk_recurso) REFERENCES recursos (id);
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reserva_categorias'
+                 AND COLUMN_NAME = 'fk_categoria' AND REFERENCED_TABLE_NAME = 'categorias') = 0,
+              'ALTER TABLE reserva_categorias ADD CONSTRAINT fk_reserva_categorias_categoria FOREIGN KEY (fk_categoria) REFERENCES categorias (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-ALTER TABLE auditoria ADD Foreign Key (usuario) REFERENCES funcionarios (id);
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reserva_recursos'
+                 AND COLUMN_NAME = 'fk_reserva' AND REFERENCED_TABLE_NAME = 'reservas') = 0,
+              'ALTER TABLE reserva_recursos ADD CONSTRAINT fk_reserva_recursos_reserva FOREIGN KEY (fk_reserva) REFERENCES reservas (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reserva_recursos'
+                 AND COLUMN_NAME = 'fk_recurso' AND REFERENCED_TABLE_NAME = 'recursos') = 0,
+              'ALTER TABLE reserva_recursos ADD CONSTRAINT fk_reserva_recursos_recurso FOREIGN KEY (fk_recurso) REFERENCES recursos (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'auditoria'
+                 AND COLUMN_NAME = 'usuario' AND REFERENCED_TABLE_NAME = 'funcionarios') = 0,
+              'ALTER TABLE auditoria ADD CONSTRAINT fk_auditoria_funcionario FOREIGN KEY (usuario) REFERENCES funcionarios (id)',
+              'SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- --------------------------------------------------------
 -- DATOS INICIALES
 -- --------------------------------------------------------
 
-insert into funcionarios (id, clave, rol, nombre, telefono, puesto) values
+INSERT IGNORE INTO funcionarios (id, clave, rol, nombre, telefono, puesto) values
                                                                         ('admin', '222',  'ADMIN',       'Administrador',   '2222-0000', ''),
                                                                         ('_111',  '111',  'FUNCIONARIO', 'Funcionario Test', '8888-1234', '');
 
-insert into categorias (id, nombre, descripcion) values
+INSERT IGNORE INTO categorias (id, nombre, descripcion) values
                                                      ('CAT-001', 'Sala para 10 personas', 'Sala para 10 personas'),
                                                      ('CAT-002', 'Laptop windows 11',     'Laptop windows 11');
 
-insert into recursos (id, descripcion, fk_categoria) values
+INSERT IGNORE INTO recursos (id, descripcion, fk_categoria) values
                                                          ('SALA-1',   'Sala 1 primer piso',  'CAT-001'),
                                                          ('SALA-2',   'Sala 2 segundo piso', 'CAT-001'),
                                                          ('_238715',  'Laptop #238715',      'CAT-002');
 
-insert into reservas (id, titulo, fecha, hora_inicio, hora_fin, fk_funcionario, estado) values
+INSERT IGNORE INTO reservas (id, titulo, fecha, hora_inicio, hora_fin, fk_funcionario, estado) values
                                                                                             ('RES-DEMO', 'Reunión de coordinación', '2026-09-10', '10:00:00', '12:00:00', '_111', 'ACTIVA'),
                                                                                             ('RES-002',  'Capacitación técnica',    '2026-09-15', '08:00:00', '10:00:00', '_111', 'ACTIVA');
 
-insert into reserva_categorias (fk_reserva, fk_categoria) values
+INSERT IGNORE INTO reserva_categorias (fk_reserva, fk_categoria) values
                                                               ('RES-DEMO', 'CAT-001'),
                                                               ('RES-002',  'CAT-002');
 
-insert into reserva_recursos (fk_reserva, fk_recurso) values
+INSERT IGNORE INTO reserva_recursos (fk_reserva, fk_recurso) values
                                                           ('RES-DEMO', 'SALA-1'),
                                                           ('RES-002',  '_238715');
 
@@ -110,7 +149,7 @@ insert into reserva_recursos (fk_reserva, fk_recurso) values
 -- VISTAS
 -- --------------------------------------------------------
 
-CREATE VIEW v_reservas_detalle AS
+CREATE OR REPLACE VIEW v_reservas_detalle AS
 SELECT
     r.id,
     r.titulo,
@@ -128,7 +167,7 @@ FROM reservas r
          JOIN recursos rec     ON rr.fk_recurso = rec.id
          JOIN categorias cat   ON rec.fk_categoria = cat.id;
 
-CREATE VIEW v_estadistica_recursos AS
+CREATE OR REPLACE VIEW v_estadistica_recursos AS
 SELECT
     cat.id              AS categoria_id,
     cat.nombre          AS categoria_nombre,
@@ -138,7 +177,7 @@ FROM categorias cat
          LEFT JOIN reservas r            ON rc.fk_reserva = r.id
 GROUP BY cat.id, cat.nombre;
 
-CREATE VIEW v_estadistica_semanas AS
+CREATE OR REPLACE VIEW v_estadistica_semanas AS
 SELECT
         YEAR(fecha)                     AS anio,
         WEEK(fecha, 3)                  AS semana_iso,

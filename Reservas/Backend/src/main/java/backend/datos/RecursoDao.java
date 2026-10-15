@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecursoDao {
-    private final ConexionMySql conexion;
+    private final Database conexion;
     private final CategoriaDao categoriaDao;
 
-    public RecursoDao(ConexionMySql conexion, CategoriaDao categoriaDao) {
+    public RecursoDao(Database conexion, CategoriaDao categoriaDao) {
         this.conexion = conexion;
         this.categoriaDao = categoriaDao;
     }

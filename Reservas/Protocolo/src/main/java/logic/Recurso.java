@@ -1,68 +1,36 @@
 package logic;
 
-import data.XmlIdAdapter;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlID;
-import jakarta.xml.bind.annotation.XmlIDREF;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
-public class Recurso {
-    @XmlID
-    @XmlJavaTypeAdapter(XmlIdAdapter.class)
-    private String id;
-    private String descripcion;
-    @XmlIDREF
+public class Recurso implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private String    id;
+    private String    descripcion;
     private Categoria categoria;
 
-    public Recurso() {
-    }
+    public Recurso() {}
 
     public Recurso(String id, String descripcion, Categoria categoria) {
-        this.id = id;
+        this.id          = id;
         this.descripcion = descripcion;
-        this.categoria = categoria;
+        this.categoria   = categoria;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String    getId()                   { return id; }
+    public void      setId(String id)          { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String    getDescripcion()                      { return descripcion; }
+    public void      setDescripcion(String descripcion)    { this.descripcion = descripcion; }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    // Alias usado en algunas vistas del proyecto 1
+    public String    getNombre()               { return descripcion; }
+    public void      setNombre(String nombre)  { this.descripcion = nombre; }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    // --- MÉTODOS AGREGADOS PARA RESOLVER EL ERROR DE COMPILACIÓN ---
-    public String getNombre() {
-        return descripcion;
-    }
-
-    public void setNombre(String nombre) {
-        this.descripcion = nombre;
-    }
-    // ----------------------------------------------------------------
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
+    public Categoria getCategoria()                    { return categoria; }
+    public void      setCategoria(Categoria categoria) { this.categoria = categoria; }
 
     @Override
-    public String toString() {
-        return descripcion;
-    }
+    public String toString() { return descripcion; }
 }

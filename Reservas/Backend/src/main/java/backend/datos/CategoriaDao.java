@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CategoriaDao {
-    private final ConexionMySql conexion;
+    private final Database conexion;
 
-    public CategoriaDao(ConexionMySql conexion) { this.conexion = conexion; }
+    public CategoriaDao(Database conexion) { this.conexion = conexion; }
 
     public List<Categoria> listar() throws SQLException {
         List<Categoria> lista = new ArrayList<>();

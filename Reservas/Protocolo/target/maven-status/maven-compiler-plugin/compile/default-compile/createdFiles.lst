@@ -1,12 +1,9 @@
-protocolo\MensajeRespuesta.class
 logic\Reserva.class
-protocolo\EventoServidor.class
+protocolo\Respuesta.class
 logic\Recurso.class
-protocolo\JsonProtocolo.class
 logic\Usuario.class
-data\LocalTimeAdapter.class
-protocolo\MensajeSolicitud.class
-data\XmlIdAdapter.class
+protocolo\Solicitud.class
 logic\Funcionario.class
-data\LocalDateAdapter.class
+protocolo\IService.class
+protocolo\Notificacion.class
 logic\Categoria.class
