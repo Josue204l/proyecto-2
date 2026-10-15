@@ -1,11 +1,9 @@
 package backend.red;
 
-import protocolo.MensajeRespuesta;
-import protocolo.MensajeSolicitud;
-import protocolo.EventoServidor;
-import java.util.function.Consumer;
+import protocolo.Respuesta;
+import protocolo.Solicitud;
 
 @FunctionalInterface
 public interface ManejadorSolicitudes {
-    MensajeRespuesta procesar(MensajeSolicitud solicitud, Consumer<EventoServidor> emisorEventos) throws Exception;
+    Respuesta procesar(Solicitud solicitud, WorkerCliente emisor) throws Exception;
 }

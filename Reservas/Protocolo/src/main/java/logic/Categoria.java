@@ -1,17 +1,11 @@
 package logic;
 
-import data.XmlIdAdapter;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlID;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
-public class Categoria {
-    @XmlID
-    @XmlJavaTypeAdapter(XmlIdAdapter.class)
+public class Categoria implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private String nombre;
     private String descripcion;
@@ -19,28 +13,26 @@ public class Categoria {
     public Categoria() {}
 
     public Categoria(String id, String nombre, String descripcion) {
-        this.id = id;
-        this.nombre = nombre;
+        this.id          = id;
+        this.nombre      = nombre;
         this.descripcion = descripcion;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId()          { return id; }
+    public void   setId(String id) { this.id = id; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombre()              { return nombre; }
+    public void   setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getDescripcion()                   { return descripcion; }
+    public void   setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
     public String getEtiqueta() {
         if (descripcion != null && !descripcion.isBlank()) return descripcion;
-        if (nombre != null && !nombre.isBlank()) return nombre;
+        if (nombre      != null && !nombre.isBlank())      return nombre;
         return id != null ? id : "";
     }
 
     @Override
-    public String toString() {
-        return getEtiqueta();
-    }
+    public String toString() { return getEtiqueta(); }
 }
