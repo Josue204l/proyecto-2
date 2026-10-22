@@ -39,12 +39,6 @@ public class estadisticasView {
     }
 
     private void initCustomComponents() {
-        LocalDate inicioAnio = LocalDate.now().withDayOfYear(1);
-        LocalDate finAnio = inicioAnio.plusYears(1).minusDays(1);
-        dpRecursosDesde.setDate(inicioAnio);
-        dpRecursosHasta.setDate(finAnio);
-        dpActividadesDesde.setDate(inicioAnio);
-        dpActividadesHasta.setDate(finAnio);
 
         if (panelRecursosDesde != null) {
             panelRecursosDesde.removeAll();

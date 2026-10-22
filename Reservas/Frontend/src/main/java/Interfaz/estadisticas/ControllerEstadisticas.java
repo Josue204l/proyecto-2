@@ -34,20 +34,13 @@ public class ControllerEstadisticas {
         if (view != null) {
             view.setController(this);
 
-            // Incluir todo el año actual para que el rango inicial cubra también reservas futuras de ejemplo.
-            LocalDate inicioAnio = LocalDate.now().withDayOfYear(1);
-            LocalDate finAnio = LocalDate.now().withDayOfYear(1).plusYears(1).minusDays(1);
             if (view.getDpRecursosDesde().getDate() == null) {
-                view.getDpRecursosDesde().setDate(inicioAnio);
             }
             if (view.getDpRecursosHasta().getDate() == null) {
-                view.getDpRecursosHasta().setDate(finAnio);
             }
             if (view.getDpActividadesDesde().getDate() == null) {
-                view.getDpActividadesDesde().setDate(inicioAnio);
             }
             if (view.getDpActividadesHasta().getDate() == null) {
-                view.getDpActividadesHasta().setDate(finAnio);
             }
         }
     }
