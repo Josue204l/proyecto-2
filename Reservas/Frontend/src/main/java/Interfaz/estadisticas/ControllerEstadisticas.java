@@ -33,15 +33,6 @@ public class ControllerEstadisticas {
         this.model = model;
         if (view != null) {
             view.setController(this);
-
-            if (view.getDpRecursosDesde().getDate() == null) {
-            }
-            if (view.getDpRecursosHasta().getDate() == null) {
-            }
-            if (view.getDpActividadesDesde().getDate() == null) {
-            }
-            if (view.getDpActividadesHasta().getDate() == null) {
-            }
         }
     }
 

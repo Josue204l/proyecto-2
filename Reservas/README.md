@@ -28,7 +28,7 @@ java -jar .\Frontend\target\frontend-1.0.0.jar
 
 Para ejecutar Frontend en otra computadora, cambia `BACKEND_HOST` por la IP de la máquina que ejecuta el Backend y permite el puerto TCP configurado en el firewall.
 
-El SQL de ejemplo crea los accesos `admin` / `222` y `_111` / `111`. Cambia las claves de demostración antes de usar datos reales. No guardes contraseñas de MySQL en archivos versionados.
+El SQL de ejemplo crea los accesos `admin` / `222` y `111` / `111`. Cambia las claves de demostración antes de usar datos reales. No guardes contraseñas de MySQL en archivos versionados.
 
 ## Arquitectura
 

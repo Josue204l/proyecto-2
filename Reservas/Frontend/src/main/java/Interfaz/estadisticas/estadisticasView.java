@@ -77,13 +77,6 @@ public class estadisticasView {
             btnPdfActividades.addActionListener(e -> controller.print());
         }
 
-        // Carga inicial automatica de datos
-        SwingUtilities.invokeLater(() -> {
-            if (this.controller != null) {
-                this.controller.cargarRecursos();
-                this.controller.cargarActividades();
-            }
-        });
     }
 
     // --- GETTERS ---
