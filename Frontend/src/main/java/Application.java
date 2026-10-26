@@ -18,8 +18,11 @@ public final class Application {
                 ServiceProxy servicio = new ServiceProxy(ServiceProxy.hostConfigurado(), ServiceProxy.puertoConfigurado());
                 ServicioActual.establecer(servicio);
                 Runtime.getRuntime().addShutdownHook(new Thread(servicio::cerrar, "cerrar-cliente-socket"));
-                if (!Sesion.isLoggedIn()) iniciarLogin(servicio);
+                if (!Sesion.isLoggedIn()) {
+                    iniciarLogin(servicio);
+                }
                 if (Sesion.isLoggedIn()) new MainFrame(Sesion.getUsuario(), servicio);
+                else servicio.cerrar();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
                         "No se pudo conectar con el Backend: " + e.getMessage(),
@@ -31,6 +34,8 @@ public final class Application {
     private static void iniciarLogin(ServiceProxy servicio) {
         LoginView loginView = new LoginView(null);
         new ControllerLogin(new ModelLogin(), loginView, servicio);
+        // LoginView es modal: al retornar de setVisible, el usuario ya se autenticó
+        // y cerró el diálogo, o canceló el inicio de sesión.
         loginView.setVisible(true);
     }
 }

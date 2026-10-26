@@ -1,9 +1,0 @@
-logic\Reserva.class
-protocolo\Respuesta.class
-logic\Recurso.class
-logic\Usuario.class
-protocolo\Solicitud.class
-logic\Funcionario.class
-protocolo\IService.class
-protocolo\Notificacion.class
-logic\Categoria.class

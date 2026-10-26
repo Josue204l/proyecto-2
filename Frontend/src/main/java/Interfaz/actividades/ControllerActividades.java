@@ -3,14 +3,13 @@ package Interfaz.actividades;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import utils.PDFGenerator;
 
 import javax.swing.*;
-import java.awt.Desktop;
-import java.io.File;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class ControllerActividades {
 
@@ -19,7 +18,7 @@ public class ControllerActividades {
 
     public ControllerActividades(actividadesView view, ModelActividades model) {
         this.view = view;
-        this.model = model;
+        this.model = Objects.requireNonNull(model, "El modelo de actividades es obligatorio");
         if (view != null) {
             view.setController(this);
             if (view.getTable() != null) {
@@ -39,7 +38,14 @@ public class ControllerActividades {
         LocalDate fecha = (view.getDatePicker() != null && view.getDatePicker().getDate() != null)
                 ? view.getDatePicker().getDate()
                 : LocalDate.now();
-        model.cargarSemana(fecha);
+        try {
+            model.cargarSemana(fecha);
+        } catch (RuntimeException ex) {
+            JOptionPane.showMessageDialog(view.getMainPanel(),
+                    "No se pudieron cargar las actividades: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         if (view.getTable() != null) {
             view.getTable().setModel(model.getTableModel());
             if (view.getTable().getColumnCount() > 0) {
@@ -58,35 +64,30 @@ public class ControllerActividades {
         if (view == null) return;
         try {
             String dest = "actividades.pdf";
-            PdfWriter writer = new PdfWriter(dest);
-            PdfDocument pdf = new PdfDocument(writer);
-            Document document = new Document(pdf);
-
-            document.add(new Paragraph("Reporte - Actividades Semanales"));
-            if (view.getLblSemana() != null) {
-                document.add(new Paragraph(view.getLblSemana().getText()));
-            }
-
-            JTable tabla = view.getTable();
-            if (tabla != null && tabla.getColumnCount() > 0) {
-                Table table = new Table(tabla.getColumnCount());
-                for (int c = 0; c < tabla.getColumnCount(); c++) {
-                    table.addHeaderCell(new Cell().add(new Paragraph(String.valueOf(tabla.getColumnName(c)))));
+            try (Document document = new Document(new PdfDocument(new PdfWriter(dest)))) {
+                document.add(new Paragraph("Reporte - Actividades Semanales"));
+                if (view.getLblSemana() != null) {
+                    document.add(new Paragraph(view.getLblSemana().getText()));
                 }
-                for (int r = 0; r < tabla.getRowCount(); r++) {
+
+                JTable tabla = view.getTable();
+                if (tabla != null && tabla.getColumnCount() > 0) {
+                    Table table = new Table(tabla.getColumnCount());
                     for (int c = 0; c < tabla.getColumnCount(); c++) {
-                        Object val = tabla.getValueAt(r, c);
-                        table.addCell(new Cell().add(new Paragraph(val == null ? "" : val.toString())));
+                        table.addHeaderCell(PDFGenerator.getCell(
+                                new Paragraph(String.valueOf(tabla.getColumnName(c))), 0, true));
                     }
+                    for (int r = 0; r < tabla.getRowCount(); r++) {
+                        for (int c = 0; c < tabla.getColumnCount(); c++) {
+                            Object val = tabla.getValueAt(r, c);
+                            table.addCell(PDFGenerator.getCell(
+                                    new Paragraph(val == null ? "" : val.toString()), 0, true));
+                        }
+                    }
+                    document.add(table);
                 }
-                document.add(table);
             }
-            document.close();
-
-            File pdfFile = new File(dest);
-            if (pdfFile.exists() && Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(pdfFile);
-            }
+            PDFGenerator.openPdf(dest);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(view.getMainPanel(), "No se pudo generar el PDF: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
