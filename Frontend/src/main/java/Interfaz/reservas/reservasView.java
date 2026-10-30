@@ -3,6 +3,7 @@ package Interfaz.reservas;
 import com.github.lgooddatepicker.components.DatePicker;
 import logic.Categoria;
 import frontend.red.ServicioActual;
+import utils.UiHelper;
 
 import javax.swing.*;
 import java.time.LocalDate;
@@ -39,6 +40,12 @@ public class reservasView {
         this.datePickerFecha = new DatePicker();
         inicializarListaCategorias();
         configurarListeners();
+        UiHelper.setIcon(extraerButton, "AI.png");
+        UiHelper.setIcon(btnSeleccionarFecha, "date.png");
+        UiHelper.setIcon(reservasButton, "ok.png");
+        UiHelper.setIcon(cancelarReservaSelecionadaButton, "cancel.png");
+        UiHelper.setIcon(LImpiarButton, "clear.png");
+        UiHelper.setIcon(imprimirButton, "pdf.png");
     }
 
     public void setController(ControllerReserva controller) {

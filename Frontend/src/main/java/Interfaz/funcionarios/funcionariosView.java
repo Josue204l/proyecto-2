@@ -1,5 +1,7 @@
 package Interfaz.funcionarios;
 
+import utils.UiHelper;
+
 import javax.swing.*;
 
 public class funcionariosView {
@@ -31,6 +33,11 @@ public class funcionariosView {
     public funcionariosView() {
         if (button1 != null) button1.setText("Buscar");
         if (button2 != null) button2.setText("Imprimir");
+        UiHelper.setIcon(button1, "search.png");
+        UiHelper.setIcon(button2, "pdf.png");
+        UiHelper.setIcon(guardarButton, "save.png");
+        UiHelper.setIcon(borrarButton, "delete.png");
+        UiHelper.setIcon(limpiarButton, "clear.png");
     }
 
     public void setController(ControllerFuncionario controller) {

@@ -1,6 +1,8 @@
 package Interfaz.estadisticas;
 
 import com.github.lgooddatepicker.components.DatePicker;
+import utils.UiHelper;
+
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
@@ -36,6 +38,10 @@ public class estadisticasView {
 
     public estadisticasView() {
         initCustomComponents();
+        UiHelper.setIcon(btnCargarRecursos, "check.png");
+        UiHelper.setIcon(btnPdfRecursos, "pdf.png");
+        UiHelper.setIcon(btnCargarActividades, "check.png");
+        UiHelper.setIcon(btnPdfActividades, "pdf.png");
     }
 
     private void initCustomComponents() {

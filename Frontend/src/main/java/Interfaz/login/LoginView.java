@@ -1,5 +1,7 @@
 package Interfaz.login;
 
+import utils.UiHelper;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -32,6 +34,14 @@ public class LoginView extends JDialog {
 
         setContentPane(contentPane);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        ImageIcon iconoVentana = UiHelper.icono("icon.png");
+        if (iconoVentana != null) {
+            setIconImage(iconoVentana.getImage());
+        }
+        UiHelper.setIcon(ingresarButton, "login.png");
+        UiHelper.setIcon(btnCancelar, "cancel.png");
+        UiHelper.setIcon(cambiarButton, "clave.png");
 
         configurarEventosBasicos();
         pack();

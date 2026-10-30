@@ -1,5 +1,7 @@
 package Interfaz.cambiarclave;
 
+import utils.UiHelper;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -20,6 +22,8 @@ public class cambiarclaveView extends JDialog {
         if (btnCancelar != null) {
             btnCancelar.addActionListener(e -> dispose());
         }
+        UiHelper.setIcon(btnGuardar, "save.png");
+        UiHelper.setIcon(btnCancelar, "cancel.png");
     }
 
     public JPanel getMainPanel() { return mainPanel; }

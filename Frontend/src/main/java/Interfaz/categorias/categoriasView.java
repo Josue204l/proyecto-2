@@ -22,6 +22,11 @@ public class categoriasView {
         if (getTxtId() != null) {
             getTxtId().setEditable(false);
         }
+        UiHelper.setIcon(buscarButton, "search.png");
+        UiHelper.setIcon(imprimirButton, "pdf.png");
+        UiHelper.setIcon(guardarButton, "save.png");
+        UiHelper.setIcon(borrarButton, "delete.png");
+        UiHelper.setIcon(limpiarButton, "clear.png");
     }
 
     public JPanel getMainPanel() {

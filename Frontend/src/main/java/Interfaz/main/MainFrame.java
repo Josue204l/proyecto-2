@@ -33,6 +33,7 @@ import logic.Reserva;
 import logic.Sesion;
 import logic.Usuario;
 import protocolo.Notificacion;
+import utils.UiHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,6 +49,10 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
                 (usuario.getRol() != null ? usuario.getRol().toUpperCase() : "") + ")");
         this.servicio = servicio;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        ImageIcon iconoVentana = UiHelper.icono("icon.png");
+        if (iconoVentana != null) {
+            setIconImage(iconoVentana.getImage());
+        }
         servicio.setReceptorNotificaciones(this);
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -57,32 +62,32 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
         if (esAdmin) {
             funcionariosView vFunc = new funcionariosView();
             new ControllerFuncionario(vFunc, new ModelFuncionario());
-            tabbedPane.addTab("Funcionarios", vFunc.getMainPanel());
+            tabbedPane.addTab("Funcionarios", UiHelper.icono("funcionarios.png"), vFunc.getMainPanel());
 
             categoriasView vCat = new categoriasView();
             new ControllerCategoria(vCat, new ModelCategoria());
-            tabbedPane.addTab("Categorías", vCat.getMainPanel());
+            tabbedPane.addTab("Categorías", UiHelper.icono("categorias.png"), vCat.getMainPanel());
 
             recursosView vRec = new recursosView();
             new ControllerRecurso(vRec, new ModelRecurso());
-            tabbedPane.addTab("Recursos", vRec.getMainPanel());
+            tabbedPane.addTab("Recursos", UiHelper.icono("recursos.png"), vRec.getMainPanel());
         } else if (funcionarioActual != null) {
             reservasView vRes = new reservasView();
             new ControllerReserva(vRes, funcionarioActual);
-            tabbedPane.addTab("Mis Reservas", vRes.getMainPanel());
+            tabbedPane.addTab("Mis Reservas", UiHelper.icono("reservas.png"), vRes.getMainPanel());
         }
 
         calendarizacionView vCal = new calendarizacionView();
         new ControllerCalendarizacion(vCal, new ModelCalendarizacion());
-        tabbedPane.addTab("Calendarización", vCal.getMainPanel());
+        tabbedPane.addTab("Calendarización", UiHelper.icono("calendarizacion.png"), vCal.getMainPanel());
 
         actividadesView vAct = new actividadesView();
         new ControllerActividades(vAct, new ModelActividades());
-        tabbedPane.addTab("Actividades", vAct.getMainPanel());
+        tabbedPane.addTab("Actividades", UiHelper.icono("actividades.png"), vAct.getMainPanel());
 
         estadisticasView vEst = new estadisticasView();
         new ControllerEstadisticas(vEst, new ModelEstadisticas());
-        tabbedPane.addTab("Estadísticas", vEst.getMainPanel());
+        tabbedPane.addTab("Estadísticas", UiHelper.icono("statistics.png"), vEst.getMainPanel());
 
         JPanel contenido = new JPanel(new BorderLayout(8, 0));
         contenido.add(tabbedPane, BorderLayout.CENTER);
@@ -101,7 +106,7 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
         listaAlertas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listaAlertas.setCellRenderer(new DefaultListCellRenderer() {
             @Override public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                    boolean selected, boolean focus) {
+                                                                    boolean selected, boolean focus) {
                 Reserva reserva = (Reserva) value;
                 String fecha = reserva.getFecha() == null ? "" : reserva.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 return super.getListCellRendererComponent(list,
@@ -116,8 +121,10 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
         panel.add(new JScrollPane(listaAlertas), BorderLayout.CENTER);
         JButton ver = new JButton("Ver detalle");
         ver.addActionListener(e -> verAlerta());
+        UiHelper.setIcon(ver, "detalles.png");
         JButton descartar = new JButton("Descartar");
         descartar.addActionListener(e -> descartarAlerta());
+        UiHelper.setIcon(descartar, "descartar.png");
         JPanel acciones = new JPanel(new GridLayout(1, 2, 6, 0));
         acciones.add(ver);
         acciones.add(descartar);
@@ -158,6 +165,7 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
         JMenuBar bar = new JMenuBar();
         JMenu archivo = new JMenu("Archivo");
         JMenuItem cambiar = new JMenuItem("Cambiar clave");
+        UiHelper.setIcon(cambiar, "clave.png");
         cambiar.addActionListener(e -> {
             cambiarclaveView dialogo = new cambiarclaveView(this);
             new ControllerCambiarClave(dialogo, usuario, servicio);
