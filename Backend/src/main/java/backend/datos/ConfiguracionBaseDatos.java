@@ -8,7 +8,7 @@ public record ConfiguracionBaseDatos(String url, String usuario, String clave, i
         String esquema = variable("DB_NAME", "sistema_reservas");
         String url = variable("DB_URL", "jdbc:mysql://" + host + ":" + puertoDb + "/" + esquema
                 + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Costa_Rica");
-        return new ConfiguracionBaseDatos(url, variable("DB_USER", "root"), variable("DB_PASSWORD", ""),
+        return new ConfiguracionBaseDatos(url, variable("DB_USER", "root"), variable("DB_PASSWORD", "(1Q2w3e4r5t6Y)"),
                 Integer.parseInt(variable("SERVER_PORT", "5050")));
     }
 

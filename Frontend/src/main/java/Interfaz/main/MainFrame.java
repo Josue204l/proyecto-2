@@ -32,18 +32,21 @@ import logic.Recurso;
 import logic.Reserva;
 import logic.Sesion;
 import logic.Usuario;
-import org.jetbrains.annotations.NotNull;
 import protocolo.Notificacion;
 import utils.UiHelper;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 
 public class MainFrame extends JFrame implements ReceptorNotificaciones {
     private final ServiceProxy servicio;
     private final DefaultListModel<Reserva> alertas = new DefaultListModel<>();
-    private final JList<Reserva> listaAlertas = new JList<>(alertas);
+    private final DefaultTableModel modeloAlertas = new DefaultTableModel(new Object[]{"Actividad", "Ver", "Desc."}, 0) {
+        @Override public boolean isCellEditable(int row, int column) { return false; }
+    };
+    private final JTable tablaAlertas = new JTable(modeloAlertas);
 
     public MainFrame(Usuario usuario, ServiceProxy servicio) {
         super("SISTEMA DE RESERVAS - " + usuario.getId() + " (" +
@@ -103,35 +106,60 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
 
     private JPanel crearPanelAlertas() {
         JPanel panel = new JPanel(new BorderLayout(4, 8));
-        panel.setBorder(BorderFactory.createTitledBorder("Alertas de reservas"));
-        panel.setPreferredSize(new Dimension(285, 0));
-        listaAlertas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        listaAlertas.setCellRenderer(new DefaultListCellRenderer() {
-            @Override public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                                    boolean selected, boolean focus) {
-                Reserva reserva = (Reserva) value;
-                String fecha = reserva.getFecha() == null ? "" : reserva.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                return super.getListCellRendererComponent(list,
-                        "Nueva reserva: " + reserva.getTitulo() + " · " + fecha, index, selected, focus);
-            }
-        });
-        listaAlertas.addMouseListener(new java.awt.event.MouseAdapter() {
+        panel.setBorder(BorderFactory.createTitledBorder("Alertas"));
+        panel.setPreferredSize(new Dimension(250, 0));
+        tablaAlertas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablaAlertas.setRowHeight(30);
+        tablaAlertas.getTableHeader().setReorderingAllowed(false);
+        tablaAlertas.getColumnModel().getColumn(0).setPreferredWidth(190);
+        configurarColumnaAccion(1, "detalles.png", "Ver detalle");
+        configurarColumnaAccion(2, "remove.png", "Descartar");
+        tablaAlertas.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2) verAlerta();
+                int fila = tablaAlertas.rowAtPoint(e.getPoint());
+                int columna = tablaAlertas.columnAtPoint(e.getPoint());
+                if (fila < 0) return;
+                if (columna == 1 || (columna == 0 && e.getClickCount() == 2)) verAlerta(fila);
+                else if (columna == 2) descartarAlerta(fila);
             }
         });
-        panel.add(new JScrollPane(listaAlertas), BorderLayout.CENTER);
-        JButton ver = new JButton("Ver detalle");
-        ver.addActionListener(e -> verAlerta());
-        UiHelper.setIcon(ver, "detalles.png");
-        JButton descartar = new JButton("Descartar");
-        descartar.addActionListener(e -> descartarAlerta());
-        UiHelper.setIcon(descartar, "descartar.png");
-        JPanel acciones = new JPanel(new GridLayout(1, 2, 6, 0));
-        acciones.add(ver);
-        acciones.add(descartar);
-        panel.add(acciones, BorderLayout.SOUTH);
+        panel.add(new JScrollPane(tablaAlertas), BorderLayout.CENTER);
         return panel;
+    }
+
+    private void configurarColumnaAccion(int columna, String icono, String descripcion) {
+        Icon iconoAccion = columna == 1 ? new FolderIcon() : UiHelper.icono(icono);
+        tablaAlertas.getColumnModel().getColumn(columna).setCellRenderer((table, value, selected, focus, row, col) -> {
+            JButton boton = new JButton();
+            boton.setIcon(iconoAccion);
+            boton.setToolTipText(descripcion);
+            boton.setBorderPainted(false);
+            boton.setContentAreaFilled(false);
+            boton.setHorizontalAlignment(SwingConstants.CENTER);
+            return boton;
+        });
+        tablaAlertas.getColumnModel().getColumn(columna).setPreferredWidth(42);
+        tablaAlertas.getColumnModel().getColumn(columna).setMaxWidth(48);
+    }
+
+    private static final class FolderIcon implements Icon {
+        @Override public int getIconWidth() { return 20; }
+        @Override public int getIconHeight() { return 16; }
+
+        @Override public void paintIcon(Component component, Graphics graphics, int x, int y) {
+            Graphics2D g = (Graphics2D) graphics.create();
+            g.translate(x, y);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setColor(new Color(246, 194, 72));
+            g.fillRoundRect(1, 2, 9, 5, 2, 2);
+            g.setColor(new Color(62, 139, 202));
+            g.fillRoundRect(1, 5, 18, 10, 3, 3);
+            g.setColor(new Color(36, 103, 162));
+            g.drawRoundRect(1, 5, 18, 10, 3, 3);
+            g.setColor(new Color(130, 193, 235));
+            g.drawLine(4, 7, 16, 7);
+            g.dispose();
+        }
     }
 
     @Override
@@ -139,28 +167,65 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
         if (!Notificacion.NUEVA_RESERVA.equals(notificacion.getTipo()) || !(notificacion.getDatos() instanceof Reserva reserva)) return;
         SwingUtilities.invokeLater(() -> {
             alertas.add(0, reserva);
-            listaAlertas.setSelectedIndex(0);
+            String encargado = reserva.getSolicitante() == null ? "" : reserva.getSolicitante().getNombre();
+            String actividad = (encargado.isBlank() ? "" : encargado + " - ") + reserva.getTitulo();
+            modeloAlertas.insertRow(0, new Object[]{actividad, "", ""});
+            tablaAlertas.setRowSelectionInterval(0, 0);
         });
     }
 
-    private void verAlerta() {
-        Reserva r = listaAlertas.getSelectedValue();
-        if (r == null) return;
-        String recursos = r.getRecursosAsignados() == null ? "" : r.getRecursosAsignados().stream()
-                .map(Recurso::getDescripcion).reduce((a, b) -> a + ", " + b).orElse("");
-        String detalle = "Título: " + r.getTitulo() + "\nFecha: " + r.getFecha() +
-                "\nHorario: " + r.getHoraInicio() + " - " + r.getHoraFin() +
-                "\nSolicitante: " + (r.getSolicitante() == null ? "" : r.getSolicitante().getNombre()) +
-                "\nRecursos: " + recursos;
-        JOptionPane.showMessageDialog(this, detalle, "Detalle de la alerta", JOptionPane.INFORMATION_MESSAGE);
+    private void verAlerta(int fila) {
+        if (fila < 0 || fila >= alertas.size()) return;
+        Reserva r = alertas.get(fila);
+        JPanel detalle = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(2, 4, 2, 6);
+        c.anchor = GridBagConstraints.WEST;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
+        detalle.add(new JLabel("Encargado:"), c);
+        c.gridx = 1;
+        detalle.add(new JLabel(r.getSolicitante() == null ? "" : r.getSolicitante().getNombre()), c);
+        c.gridx = 0;
+        c.gridy++;
+        detalle.add(new JLabel("Fecha:"), c);
+        c.gridx = 1;
+        detalle.add(new JLabel(r.getFecha() == null ? "" : r.getFecha().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))), c);
+        c.gridx = 0;
+        c.gridy++;
+        detalle.add(new JLabel("Desde:"), c);
+        c.gridx = 1;
+        detalle.add(new JLabel(r.getHoraInicio() == null ? "" : r.getHoraInicio().toString()), c);
+        c.gridx = 0;
+        c.gridy++;
+        detalle.add(new JLabel("Hasta:"), c);
+        c.gridx = 1;
+        detalle.add(new JLabel(r.getHoraFin() == null ? "" : r.getHoraFin().toString()), c);
+        c.gridx = 0;
+        c.gridy++;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        detalle.add(new JLabel("Recursos:"), c);
+        JList<String> recursos = new JList<>(r.getRecursosAsignados() == null ? new String[0] : r.getRecursosAsignados().stream()
+                .map(Recurso::getDescripcion).toArray(String[]::new));
+        recursos.setVisibleRowCount(3);
+        c.gridx = 1;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 1;
+        detalle.add(new JScrollPane(recursos), c);
+        detalle.setPreferredSize(new Dimension(235, 165));
+        JOptionPane.showMessageDialog(this, detalle, r.getTitulo(), JOptionPane.PLAIN_MESSAGE);
     }
 
-    private void descartarAlerta() {
-        int index = listaAlertas.getSelectedIndex();
-        if (index < 0) return;
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Desea descartar esta alerta?",
-                "Confirmar descarte", JOptionPane.YES_NO_OPTION);
-        if (confirmacion == JOptionPane.YES_OPTION) alertas.remove(index);
+    private void descartarAlerta(int fila) {
+        if (fila < 0 || fila >= alertas.size()) return;
+        int confirmacion = JOptionPane.showConfirmDialog(this, alertas.get(fila).getTitulo(), "¿Descartar?", JOptionPane.YES_NO_OPTION);
+        if (confirmacion == JOptionPane.YES_OPTION) {
+            alertas.remove(fila);
+            modeloAlertas.removeRow(fila);
+        }
     }
 
     private JMenuBar crearMenu(Usuario usuario) {

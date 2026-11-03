@@ -8,6 +8,8 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 // Imports de iText 7
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -91,16 +93,17 @@ public class ControllerEstadisticas {
             PdfWriter writer = new PdfWriter(dest);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
+            var boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
 
-            document.add(new Paragraph("REPORTE DE RECURSOS RESERVADOS").setBold().setFontSize(16));
+            document.add(new Paragraph("REPORTE DE RECURSOS RESERVADOS").setFont(boldFont).setFontSize(16));
             document.add(new Paragraph("Período: " + rango[0] + " a " + rango[1]));
             document.add(new Paragraph("\n"));
 
             List<EstadisticaFila> filas = model.calcularRecursos(rango[0], rango[1]);
             Table tabla = new Table(UnitValue.createPercentArray(new float[]{70, 30}));
             tabla.useAllAvailableWidth();
-            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Categoría").setBold(), 0, true));
-            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Cantidad").setBold(), 0, true));
+            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Categoría").setFont(boldFont), 0, true));
+            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Cantidad").setFont(boldFont), 0, true));
             for (EstadisticaFila f : filas) {
                 tabla.addCell(PDFGenerator.getCell(new Paragraph(f.getEtiqueta()), 0, true));
                 tabla.addCell(PDFGenerator.getCell(new Paragraph(String.valueOf(f.getCantidad())), 0, true));
@@ -123,16 +126,17 @@ public class ControllerEstadisticas {
             PdfWriter writer = new PdfWriter(dest);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
+            var boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
 
-            document.add(new Paragraph("REPORTE DE ACTIVIDADES POR SEMANA").setBold().setFontSize(16));
+            document.add(new Paragraph("REPORTE DE ACTIVIDADES POR SEMANA").setFont(boldFont).setFontSize(16));
             document.add(new Paragraph("Período: " + rango[0] + " a " + rango[1]));
             document.add(new Paragraph("\n"));
 
             List<EstadisticaFila> filas = model.calcularActividades(rango[0], rango[1]);
             Table tabla = new Table(UnitValue.createPercentArray(new float[]{70, 30}));
             tabla.useAllAvailableWidth();
-            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Semana").setBold(), 0, true));
-            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Cantidad").setBold(), 0, true));
+            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Semana").setFont(boldFont), 0, true));
+            tabla.addHeaderCell(PDFGenerator.getCell(new Paragraph("Cantidad").setFont(boldFont), 0, true));
             for (EstadisticaFila f : filas) {
                 tabla.addCell(PDFGenerator.getCell(new Paragraph(f.getEtiqueta()), 0, true));
                 tabla.addCell(PDFGenerator.getCell(new Paragraph(String.valueOf(f.getCantidad())), 0, true));
