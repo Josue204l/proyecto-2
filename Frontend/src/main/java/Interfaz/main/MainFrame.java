@@ -32,6 +32,7 @@ import logic.Recurso;
 import logic.Reserva;
 import logic.Sesion;
 import logic.Usuario;
+import org.jetbrains.annotations.NotNull;
 import protocolo.Notificacion;
 import utils.UiHelper;
 
@@ -98,6 +99,7 @@ public class MainFrame extends JFrame implements ReceptorNotificaciones {
         setLocationRelativeTo(null);
         setVisible(true);
     }
+
 
     private JPanel crearPanelAlertas() {
         JPanel panel = new JPanel(new BorderLayout(4, 8));
