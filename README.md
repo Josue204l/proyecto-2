@@ -1,37 +1,20 @@
-# Sistema de Reservas — Proyecto 2
-
-Aplicación Maven en tres módulos: `Protocolo` define el contrato serializable, `Backend` ejecuta sockets TCP y persiste en MySQL, y `Frontend` contiene Swing y el Proxy.
-
-## Preparar y ejecutar
-
-1. Instala MySQL e importa `sistema_reservas.sql` una sola vez.
-2. Desde `Reservas`, construye los ejecutables y corre las pruebas con `mvn clean verify`.
-3. Configura e inicia el Backend:
-
-```powershell
-$env:DB_HOST = "localhost"
-$env:DB_PORT = "3306"
-$env:DB_NAME = "sistema_reservas"
-$env:DB_USER = "root"
-$env:DB_PASSWORD = "TU_CLAVE_MYSQL"
-$env:SERVER_PORT = "5050"
-java -jar .\Backend\target\backend-1.0.0.jar
+# Sistema de Reservas
+Aplicación de escritorio para reservar recursos de una institución (salas, equipos y similares). El administrador mantiene funcionarios, categorías y recursos. El funcionario crea y cancela sus reservas. Ambos consultan el calendario, las actividades del día y estadísticas, y pueden guardar un reporte en PDF.
+El trabajo se divide en tres módulos Maven. `Protocolo` define los datos y los códigos de cada operación. `Backend` escucha en el puerto 5050, atiende a cada cliente en su propio hilo y guarda todo en `datos/reservas.xml`. `Frontend` es la ventana Swing: envía cada pedido y espera la respuesta, y además escucha avisos cuando alguien crea una reserva. La primera vez el servidor carga usuarios de prueba: `admin` / `222` y `111` / `111`.
+## Información del curso
+- *Universidad Nacional de Costa Rica*
+- *Curso:* Programación 3
+- *Ciclo:* II 2026
+- *Profesor:* José Sánchez
+## Estudiantes
+| Nombre | Cédula |
+| --- | --- |
+| Johan Jafeth Zuñiga Rodríguez | 703330212 |
+| Jonathan Josué Rojas Estrada | 1-1907-0744 |
+## Cómo ejecutar
+Requisito: Java 21 y Maven. Desde la carpeta `Proyecto nuevo`, primero el servidor y, en otra terminal, la ventana:
+```bash
+mvn -pl Backend -am compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass="reservas.server.Application"
+mvn -pl Frontend -am compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass="reservas.presentation.Application"
 ```
-
-4. En otra terminal, inicia el Frontend:
-
-```powershell
-$env:BACKEND_HOST = "localhost"
-$env:BACKEND_PORT = "5050"
-java -jar .\Frontend\target\frontend-1.0.0.jar
-```
-
-Para ejecutar Frontend en otra computadora, cambia `BACKEND_HOST` por la IP de la máquina que ejecuta el Backend y permite el puerto TCP configurado en el firewall.
-
-El SQL de ejemplo crea los accesos `admin` / `222` y `111` / `111`. Cambia las claves de demostración antes de usar datos reales. No guardes contraseñas de MySQL en archivos versionados.
-
-## Arquitectura
-
-Las solicitudes y respuestas usan `java.io.Serializable`. Un hilo lector del Frontend separa respuestas correlacionadas y alertas asincrónicas; el Backend atiende clientes con workers independientes. El panel lateral de alertas permite ver el detalle y descartar localmente con confirmación.
-
-`mvn -DskipTests package` compila los módulos y el código de pruebas. `mvn verify` ejecuta las pruebas unitarias y de integración. MySQL debe estar configurado en la máquina Backend.
+También se puede abrir el proyecto en IntelliJ IDEA y ejecutar `reservas.server.Application` y después `reservas.presentation.Application`.
