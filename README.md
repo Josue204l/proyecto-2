@@ -15,6 +15,6 @@ El trabajo se divide en tres módulos Maven. `Protocolo` define los datos y los 
 Requisito: Java 21 y Maven. Desde la carpeta `Proyecto nuevo`, primero el servidor y, en otra terminal, la ventana:
 ```bash
 1. Se ejecuta backend.
-2. Se ejecuta frontend
+2. Se ejecuta frontend.
 ```
 También se puede abrir el proyecto en IntelliJ IDEA y ejecutar `reservas.server.Application` y después `reservas.presentation.Application`.
